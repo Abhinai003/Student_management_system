@@ -1,0 +1,112 @@
+
+/* CSS structure:
+selector {
+    property: value;
+} */
+
+
+/* Apply styling to the entire page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #cbdbf4;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Main heading */
+h1 {
+    text-align: center;
+    color: #2c3e50;
+}
+
+/* Section headings */
+h2 {
+    color: #34495e;
+    margin-top: 30px;
+}
+
+/* Registration form */
+form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 20px;
+    max-width: 500px;
+
+    /* Flexbox */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Input fields and dropdown */
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Submit button */
+button {
+    background-color: #2980b9;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Button hover effect */
+button:hover {
+    background-color: #1f618d;
+}
+
+/* Student records table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    margin-top: 15px;
+}
+
+/* Table headings and cells */
+th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+/* Table heading background */
+th {
+    background-color: #2980b9;
+    color: white;
+}
+
+/* Table responsive wrapper */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Responsive styling for smaller screens */
+@media screen and (max-width: 600px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    form {
+        max-width: 100%;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+}
