@@ -1,5 +1,8 @@
-//accessing form elements
 
+// FastAPI backend URL
+const API_URL = "http://127.0.0.1:8000/api/students/";
+
+// Accessing form elements
 let studentForm = document.getElementById("studentForm");
 let nameInput = document.getElementById("studentName");
 let emailInput = document.getElementById("email");
@@ -8,25 +11,36 @@ let courseInput = document.getElementById("course");
 let studentTableBody = document.getElementById("studentTableBody");
 let searchInput = document.getElementById("searchInput");
 
-//Array to store student records
-let students = JSON.parse(localStorage.getItem("students")) || [];
-
+// Store students retrieved from PostgreSQL
+let students = [];
 
 let editIndex = null;
 
 
-console.log(studentForm);
-console.log(nameInput);
-console.log(emailInput);
-console.log(mobileInput);
-console.log(courseInput);
-console.log(studentTableBody);
+// GET: Fetch all students from backend
+async function fetchStudents() {
+    try {
+        let response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch students");
+        }
+
+        students = await response.json();
+
+        displayStudents();
+
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        alert("Unable to load students. Check whether FastAPI is running.");
+    }
+}
 
 
-//Handling form submission
-studentForm.addEventListener("submit",function(event){
+// POST / PUT: Handle form submission
+studentForm.addEventListener("submit", async function(event) {
     event.preventDefault();
-    
+
     let student = {
         name: nameInput.value,
         email: emailInput.value,
@@ -34,22 +48,51 @@ studentForm.addEventListener("submit",function(event){
         course: courseInput.value
     };
 
-    if (editIndex === null) {
-        students.push(student);
-    } else {
-        students[editIndex] = student;
+    try {
+        let response;
+
+        if (editIndex === null) {
+
+            // POST: Add new student
+            response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(student)
+            });
+
+        } else {
+
+            // PUT: Update existing student
+            response = await fetch(API_URL + editIndex, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(student)
+            });
+
+        }
+
+        if (!response.ok) {
+            let errorData = await response.json();
+            throw new Error(JSON.stringify(errorData.detail));
+        }
+
         editIndex = null;
+        studentForm.reset();
+
+        await fetchStudents();
+
+    } catch (error) {
+        console.error("Error saving student:", error);
+        alert("Unable to save student: " + error.message);
     }
-saveStudents();
-displayStudents();
-
-studentForm.reset();
-
-    console.log(students);
 });
 
 
-//for filter/search
+// Search functionality
 searchInput.addEventListener("input", function() {
 
     let searchText = searchInput.value.toLowerCase();
@@ -70,29 +113,38 @@ searchInput.addEventListener("input", function() {
 });
 
 
+// DELETE: Delete student from database
+async function deleteStudent(id) {
 
+    if (!confirm("Are you sure you want to delete this student?")) {
+        return;
+    }
 
-//delete functionality
-function deleteStudent(index) {
+    try {
+        let response = await fetch(API_URL + id, {
+            method: "DELETE"
+        });
 
-    students.splice(index, 1);
+        if (!response.ok) {
+            throw new Error("Failed to delete student");
+        }
 
-    saveStudents();
-    displayStudents();
+        await fetchStudents();
 
-    console.log(students);
+    } catch (error) {
+        console.error("Error deleting student:", error);
+        alert(error.message);
+    }
 
 }
 
 
-
+// Display students in HTML table
 function displayStudents(studentList = students) {
 
     studentTableBody.innerHTML = "";
 
-    studentList.forEach(function(student) {
-
-        let index = students.indexOf(student);
+    studentList.forEach(function(student, index) {
 
         studentTableBody.innerHTML += `
             <tr>
@@ -102,8 +154,8 @@ function displayStudents(studentList = students) {
                 <td>${student.mobile}</td>
                 <td>${student.course}</td>
                 <td>
-                    <button onclick="editStudent(${index})">Edit</button>
-                    <button onclick="deleteStudent(${index})">Delete</button>
+                    <button onclick="editStudent(${student.id})">Edit</button>
+                    <button onclick="deleteStudent(${student.id})">Delete</button>
                 </td>
             </tr>
         `;
@@ -112,22 +164,27 @@ function displayStudents(studentList = students) {
 
 }
 
-//editing function
-function editStudent(index) {
 
-    let student = students[index];
+// Edit student
+function editStudent(id) {
+
+    let student = students.find(function(item) {
+        return item.id === id;
+    });
+
+    if (!student) {
+        return;
+    }
 
     nameInput.value = student.name;
     emailInput.value = student.email;
     mobileInput.value = student.mobile;
     courseInput.value = student.course;
 
-    editIndex = index;
+    editIndex = id;
 
 }
 
-function saveStudents() {
-    localStorage.setItem("students", JSON.stringify(students));
-}
 
-displayStudents();
+// Load students when page opens
+fetchStudents();
